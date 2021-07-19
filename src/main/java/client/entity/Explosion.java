@@ -1,7 +1,7 @@
-package entity;
+package client.entity;
 
-import ResourceManager.ResourceManager;
-import other.Audio;
+import client.ResourceManager.ResourceManager;
+import client.other.Audio;
 
 import java.awt.*;
 
@@ -10,18 +10,13 @@ import java.awt.*;
  * @Date 2021/7/15 19:09
  */
 // 爆炸
-public class Explosion {
+public class Explosion extends AbstractGameObject {
+    public int step = 0;
     private int x;
     private int y;
     private int width;
     private int height;
     private boolean isAlive = true;
-
-    public int step = 0;
-
-    public boolean isAlive() {
-        return isAlive;
-    }
 
     public Explosion(int x, int y) {
         this.x = x;
@@ -29,10 +24,14 @@ public class Explosion {
         this.width = ResourceManager.explodes[0].getWidth();
         this.height = ResourceManager.explodes[0].getHeight();
         // 爆炸音乐
-        new Thread(()->new Audio("audio/explode.wav").play()).start();
+        new Thread(() -> new Audio("audio/explode.wav").play()).start();
     }
 
-    // 画tank
+    public boolean isAlive() {
+        return isAlive;
+    }
+
+    // 画爆炸
     public void fillRect(Graphics g) {
         if (!isAlive) return;
         if (step >= ResourceManager.explodes.length) {

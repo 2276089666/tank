@@ -1,9 +1,10 @@
-package entity;
+package client.entity;
 
-import ResourceManager.ResourceManager;
-import constant.Direction;
-import constant.Group;
-import frame.TankFrame;
+import client.ResourceManager.ResourceManager;
+import client.constant.Direction;
+import client.constant.Group;
+import client.frame.TankFrame;
+import client.model.GameModel;
 
 import java.awt.*;
 import java.util.Random;
@@ -14,22 +15,17 @@ import java.util.Random;
  * @Date 2021/7/14 19:57
  */
 // 电脑
-public class Tank {
+public class Tank extends AbstractGameObject {
     public static final int speed = 5;
+    private Random r = new Random();
     private int x;
     private int y;
     private Direction dir;
-    private boolean left, right, up, down;
-
     private int preX;
     private int preY;
-
-    public Group getGroup() {
-        return group;
-    }
-
     private Group group;
-    public boolean isAlive = true;
+    private boolean isAlive = true;
+    private Rectangle rectangle = null;
 
     public Tank(int x, int y, Direction dir, Group group) {
         this.x = x;
@@ -38,6 +34,15 @@ public class Tank {
         this.group = group;
         this.preX = x;
         this.preY = y;
+        this.rectangle = new Rectangle();
+        this.rectangle.x = x;
+        this.rectangle.y = y;
+        this.rectangle.width = ResourceManager.badTankD.getWidth();
+        this.rectangle.height = ResourceManager.badTankD.getHeight();
+    }
+
+    public Group getGroup() {
+        return group;
     }
 
     // 画tank
@@ -58,6 +63,17 @@ public class Tank {
                 break;
         }
         moveByDirection();
+        this.rectangle.x = this.x;
+        this.rectangle.y = this.y;
+    }
+
+    public Rectangle getRectangle() {
+        return rectangle;
+    }
+
+    @Override
+    public boolean isAlive() {
+        return isAlive;
     }
 
     public void moveByDirection() {
@@ -89,12 +105,10 @@ public class Tank {
     }
 
     // tank即将出界,让tank回到出界前的位置
-    private void back() {
+    public void back() {
         x = preX;
         y = preY;
     }
-
-    Random r = new Random();
 
     private void setRandomDirection() {
         // 换方向太频繁,控制频率
@@ -103,13 +117,6 @@ public class Tank {
         }
     }
 
-    public int getX() {
-        return x;
-    }
-
-    public int getY() {
-        return y;
-    }
 
     private void fire() {
         // 发射子弹太频繁,控制频率
@@ -117,12 +124,36 @@ public class Tank {
             int bx = x + ResourceManager.goodTankU.getWidth() / 2 - ResourceManager.bulletU.getWidth() / 2;
             int by = y + ResourceManager.goodTankU.getHeight() / 2 - ResourceManager.bulletU.getHeight() / 2;
             Bullet bullet = new Bullet(bx, by, dir, group);
-            TankFrame.getInstance().addBullet(bullet);
+            GameModel.getInstance().add(bullet);
         }
     }
 
     public void die() {
         this.isAlive = false;
-        TankFrame.getInstance().explosions.add(new Explosion(x, y));
+        GameModel.getInstance().add(new Explosion(x, y));
+    }
+
+    public boolean collisionWithWall(Wall wall) {
+        if (!this.isAlive()) return true;
+        Rectangle rectangle = this.getRectangle();
+        Rectangle wallRectangle = wall.getRectangle();
+        if (rectangle.intersects(wallRectangle)) {
+            this.back();
+            return false;
+        }
+        return false;
+    }
+
+    public boolean collisionWithTank(Tank tank2) {
+        if (!this.isAlive()) return true;
+        if (!tank2.isAlive()) return true;
+        Rectangle rectangle = this.getRectangle();
+        Rectangle rectangle1 = tank2.getRectangle();
+        if (rectangle.intersects(rectangle1)) {
+            this.back();
+            tank2.back();
+            return false;
+        }
+        return false;
     }
 }

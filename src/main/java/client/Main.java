@@ -1,5 +1,7 @@
-import frame.TankFrame;
-import other.Audio;
+package client;
+
+import client.frame.TankFrame;
+import client.other.Audio;
 
 /**
  * @Author ws

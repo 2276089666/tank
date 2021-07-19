@@ -1,0 +1,9 @@
+initTankCount=10
+GAME_WIDTH=800
+GAME_HEIGHT=600
+
+#发射策略
+fireStrategy=DefaultFireStrategy
+#fireStrategy=FourDirFireStrategy
+
+Collider=BulletAndTankCollider,BulletAndWallCollider,TankAndWallCollider,TankAndTankCollider,PlayerTankAndTankCollider,PlayerTankAndWallCollider

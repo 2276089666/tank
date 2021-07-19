@@ -1,4 +1,4 @@
-package constant;
+package client.constant;
 
 import java.util.Random;
 

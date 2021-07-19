@@ -1,4 +1,4 @@
-package util;
+package client.util;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
