@@ -7,7 +7,8 @@ import client.frame.TankFrame;
 import client.model.GameModel;
 import client.strategy.fire.FireStrategy;
 import client.util.PropertiesUtil;
-import net.message.TankJoinMessage;
+import net.client.NetClient;
+import net.message.*;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -44,24 +45,24 @@ public class PlayerTank extends AbstractGameObject {
         this.preY = y;
         this.rectangle.x = x;
         this.rectangle.y = y;
-        this.rectangle.width=ResourceManager.goodTankU.getWidth();
-        this.rectangle.height=ResourceManager.goodTankU.getHeight();
-        this.id=UUID.randomUUID();
-        this.fire=false;
+        this.rectangle.width = ResourceManager.goodTankU.getWidth();
+        this.rectangle.height = ResourceManager.goodTankU.getHeight();
+        this.id = UUID.randomUUID();
+        this.fire = false;
+        this.isAlive = true;
     }
 
     public PlayerTank(TankJoinMessage tankJoinMessage) {
-        this.id=tankJoinMessage.getUuid();
-        this.x=tankJoinMessage.getX();
-        this.y=tankJoinMessage.getY();
-        this.dir=tankJoinMessage.getDirection();
-        this.group=tankJoinMessage.getGroup();
-        this.moving=tankJoinMessage.isMoving();
+        this.id = tankJoinMessage.getUuid();
+        this.x = tankJoinMessage.getX();
+        this.y = tankJoinMessage.getY();
+        this.dir = tankJoinMessage.getDirection();
+        this.group = tankJoinMessage.getGroup();
         this.rectangle = new Rectangle();
-        this.rectangle.width=ResourceManager.goodTankU.getWidth();
-        this.rectangle.height=ResourceManager.goodTankU.getHeight();
         this.rectangle.x = x;
         this.rectangle.y = y;
+        this.rectangle.width = ResourceManager.goodTankU.getWidth();
+        this.rectangle.height = ResourceManager.goodTankU.getHeight();
     }
 
 
@@ -85,13 +86,29 @@ public class PlayerTank extends AbstractGameObject {
         return fire;
     }
 
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    public void setY(int y) {
+        this.y = y;
+    }
+
+    public void setDir(Direction dir) {
+        this.dir = dir;
+    }
+
+    public void setMoving(boolean moving) {
+        this.moving = moving;
+    }
+
     // 画tank
     public void fillRect(Graphics g) {
         if (!this.isAlive()) return;
 
         Color preColor = g.getColor();
         g.setColor(Color.YELLOW);
-        g.drawString(id.toString(),x-80,y-10);
+        g.drawString(id.toString(), x - 80, y - 10);
         g.setColor(preColor);
 
         switch (dir) {
@@ -135,11 +152,16 @@ public class PlayerTank extends AbstractGameObject {
                 break;
         }
         setDirection();
+
     }
 
     private void setDirection() {
+        boolean preIsMoving = this.moving;
+        Direction preDirection = this.dir;
         if (!left && !right && !up && !down) {
             this.moving = false;
+            // 同步其他client,当前tank移动停止
+            NetClient.getInstance().send(new TankStopMovingMessage(this.id, this.x, this.y));
         } else {
             this.moving = true;
             if (left && !right && !up && !down) {
@@ -154,6 +176,16 @@ public class PlayerTank extends AbstractGameObject {
             if (!left && !right && !up && down) {
                 dir = Direction.Down;
             }
+
+            // 发送tank的移动同步消息
+            // 之前一直处于移动状态,不发送消息,移动键松开时再发送,减少发送的message
+            if (!preIsMoving)
+                NetClient.getInstance().send(new TankStartMovingMessage(this.id, this.x, this.y, this.getDir()));
+
+            // 当前tank方向改变,同步其他client
+            if (!dir.equals(preDirection))
+                NetClient.getInstance().send(new TankChangeDirMessage(this.id, this.x, this.y, this.dir));
+
         }
 
     }
@@ -216,7 +248,7 @@ public class PlayerTank extends AbstractGameObject {
                 up = false;
                 break;
             case KeyEvent.VK_SPACE:
-                this.fire=true;
+                this.fire = true;
                 fire();
                 break;
         }
@@ -243,6 +275,7 @@ public class PlayerTank extends AbstractGameObject {
         }
     }
 
+
     public void die() {
         this.isAlive = false;
         GameModel.getInstance().add(new Explosion(x, y));
@@ -265,7 +298,7 @@ public class PlayerTank extends AbstractGameObject {
         if (!this.isAlive()) return true;
         Rectangle rectangle = this.getRectangle();
         Rectangle wallRectangle = wall.getRectangle();
-        if (rectangle.intersects(wallRectangle)){
+        if (rectangle.intersects(wallRectangle)) {
             this.back();
             return false;
         }
@@ -281,10 +314,11 @@ public class PlayerTank extends AbstractGameObject {
         if (!playerTank1.isAlive()) return true;
         Rectangle rectangle = this.getRectangle();
         Rectangle rectangle1 = playerTank1.getRectangle();
-        if (rectangle.intersects(rectangle1)){
+        if (rectangle.intersects(rectangle1)) {
             this.back();
             return false;
         }
         return false;
     }
+
 }

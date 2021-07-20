@@ -5,7 +5,6 @@ import client.constant.Direction;
 import client.constant.Group;
 import client.frame.TankFrame;
 import client.model.GameModel;
-import net.message.TankJoinMessage;
 
 import java.awt.*;
 import java.util.Random;
@@ -137,7 +136,7 @@ public class Tank extends AbstractGameObject {
         if (r.nextInt(100) > 80) {
             int bx = x + ResourceManager.goodTankU.getWidth() / 2 - ResourceManager.bulletU.getWidth() / 2;
             int by = y + ResourceManager.goodTankU.getHeight() / 2 - ResourceManager.bulletU.getHeight() / 2;
-            Bullet bullet = new Bullet(bx, by, dir, group);
+            Bullet bullet = new Bullet(bx, by, dir, Group.ManMachine,getId());
             GameModel.getInstance().add(bullet);
         }
     }

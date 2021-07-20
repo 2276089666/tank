@@ -1,16 +1,13 @@
 package net.client;
 
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelPipeline;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import net.coder.TankJoinMessageDecoder;
-import net.coder.TankJoinMessageEncoder;
+import net.coder.Decoder;
+import net.coder.Encoder;
 import net.handler.ClientHandler;
-import net.message.TankJoinMessage;
+import net.message.AbstractMessage;
 
 import java.net.InetSocketAddress;
 
@@ -26,8 +23,8 @@ public class NetClient {
     private NetClient() {
     }
 
-    public void send(TankJoinMessage tankJoinMessage) {
-        client.writeAndFlush(tankJoinMessage);
+    public void send(AbstractMessage abstractMessage) {
+        client.writeAndFlush(abstractMessage);
     }
 
     private static class NetClientHolder {
@@ -49,15 +46,29 @@ public class NetClient {
                         @Override
                         protected void initChannel(NioSocketChannel ch) throws Exception {
                             ChannelPipeline pipeline = ch.pipeline();
-                            pipeline.addLast(new TankJoinMessageEncoder());
-                            pipeline.addLast(new TankJoinMessageDecoder());
+                            pipeline.addLast(new Encoder());
+                            pipeline.addLast(new Decoder());
                             pipeline.addLast(new ClientHandler());
                         }
                     })
                     .connect(new InetSocketAddress("localhost", 9090));
-            connect.sync();
-            client = connect.channel();
+
+
+            connect.addListener(new ChannelFutureListener() {
+                @Override
+                public void operationComplete(ChannelFuture future) throws Exception {
+                    if (!future.isSuccess()) {
+                        System.out.println("not connected!");
+                    } else {
+                        System.out.println("connected!");
+                        // initialize the channel
+                        client = future.channel();
+                    }
+                }
+            });
+
             connect.channel().closeFuture().sync();
+            System.out.println("connection closed!");
         } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {

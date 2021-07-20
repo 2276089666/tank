@@ -5,8 +5,12 @@ import client.ResourceManager.ResourceManager;
 import client.constant.Direction;
 import client.constant.Group;
 import client.frame.TankFrame;
+import net.client.NetClient;
+import net.message.TankDieMessage;
+
 
 import java.awt.*;
+import java.util.UUID;
 
 /**
  * @Author ws
@@ -15,13 +19,15 @@ import java.awt.*;
 // 子弹
 public class Bullet extends AbstractGameObject {
     private static final int speed = 20;
-    Rectangle rectangle = null;
+    private Rectangle rectangle = null;
     private int x, y;
     private Direction dir;
     private Group group;
     private boolean isAlive = true; // 子弹越界,就表示子弹死亡
+    private UUID id;
+    private UUID playerId;
 
-    public Bullet(int x, int y, Direction dir, Group group) {
+    public Bullet(int x, int y, Direction dir, Group group,UUID playerId) {
         this.x = x;
         this.y = y;
         this.dir = dir;
@@ -31,27 +37,61 @@ public class Bullet extends AbstractGameObject {
         this.rectangle.y = y;
         this.rectangle.width = ResourceManager.bulletD.getWidth();
         this.rectangle.height = ResourceManager.bulletD.getHeight();
+        this.id= UUID.randomUUID();
+        this.playerId=playerId;
     }
 
     // 画子弹
     public void fillRect(Graphics g) {
         switch (dir) {
             case Right:
-                g.drawImage(this.group == Group.Bad ? ResourceManager.bulletR : ResourceManager.goodBulletR, x, y, null);
+                g.drawImage(this.group == Group.ManMachine ? ResourceManager.bulletR : ResourceManager.goodBulletR, x, y, null);
                 break;
             case Left:
-                g.drawImage(this.group == Group.Bad ? ResourceManager.bulletL : ResourceManager.goodBulletL, x, y, null);
+                g.drawImage(this.group == Group.ManMachine ? ResourceManager.bulletL : ResourceManager.goodBulletL, x, y, null);
                 break;
             case Up:
-                g.drawImage(this.group == Group.Bad ? ResourceManager.bulletU : ResourceManager.goodBulletU, x, y, null);
+                g.drawImage(this.group == Group.ManMachine ? ResourceManager.bulletU : ResourceManager.goodBulletU, x, y, null);
                 break;
             case Down:
-                g.drawImage(this.group == Group.Bad ? ResourceManager.bulletD : ResourceManager.goodBulletD, x, y, null);
+                g.drawImage(this.group == Group.ManMachine ? ResourceManager.bulletD : ResourceManager.goodBulletD, x, y, null);
                 break;
         }
         moveByDirection();
         this.rectangle.x = x;
         this.rectangle.y = y;
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public UUID getPlayerId() {
+        return playerId;
+    }
+
+    public Direction getDir() {
+        return dir;
+    }
+
+    public Group getGroup() {
+        return group;
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public void setPlayerId(UUID playerId) {
+        this.playerId = playerId;
     }
 
     public boolean isAlive() {
@@ -90,7 +130,7 @@ public class Bullet extends AbstractGameObject {
         // 避免一个子弹打死多个tank
         if (!this.isAlive()) return true;
         // 同队不攻击
-        if (this.group == tank.getGroup()) return false;
+        if (this.group == tank.getGroup()) return true;
         Rectangle rectangle = this.getRectangle();
         Rectangle rectangle2 = tank.getRectangle();
         // 两个矩阵有相交,说明子弹打中了,对应子弹和坦克die
@@ -102,7 +142,7 @@ public class Bullet extends AbstractGameObject {
         return false;
     }
 
-    private void die() {
+    public void die() {
         isAlive = false;
     }
 
@@ -133,6 +173,7 @@ public class Bullet extends AbstractGameObject {
         if (rectangle.intersects(playerTankRectangle)) {
             this.die();
             playerTank.die();
+            NetClient.getInstance().send(new TankDieMessage(this.getId(),this.getId()));
             return true;
         }
         return false;

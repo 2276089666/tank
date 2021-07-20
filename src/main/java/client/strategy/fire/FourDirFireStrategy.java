@@ -5,18 +5,23 @@ import client.constant.Direction;
 import client.entity.Bullet;
 import client.entity.PlayerTank;
 import client.frame.TankFrame;
+import net.client.NetClient;
+import net.message.BulletNewMessage;
 
 /**
  * @Author ws
  * @Date 2021/7/16 9:24
  */
-public class FourDirFireStrategy implements FireStrategy{
+public class FourDirFireStrategy implements FireStrategy {
     @Override
     public void fire(PlayerTank playerTank) {
         int bx = playerTank.getX() + ResourceManager.goodTankU.getWidth() / 2 - ResourceManager.goodBulletU.getWidth() / 2;
         int by = playerTank.getY() + ResourceManager.goodTankU.getHeight() / 2 - ResourceManager.goodBulletU.getHeight() / 2;
         for (Direction dir : Direction.values()) {
-            TankFrame.getInstance().getGameModel().add(new Bullet(bx, by, dir, playerTank.getGroup()));
+            Bullet bullet = new Bullet(bx, by, dir, playerTank.getGroup(), playerTank.getId());
+            TankFrame.getInstance().getGameModel().add(bullet);
+            // 同步远程client的子弹位置
+            NetClient.getInstance().send(new BulletNewMessage(bullet));
         }
     }
 }

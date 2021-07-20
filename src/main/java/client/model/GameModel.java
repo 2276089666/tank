@@ -40,7 +40,7 @@ public class GameModel implements Serializable {
         this.objects = new ArrayList<>();
         this.objects.add(playerTank);
         for (int i = 0; i < Integer.parseInt(PropertiesUtil.get("initTankCount")); i++) {
-            this.objects.add(new Tank(50 + 150 * i, 100 + 30 * i, Direction.Down, Group.Bad));
+            this.objects.add(new Tank(50 + 150 * i, 100 + 30 * i, Direction.Down, Group.ManMachine));
         }
         for (int i = 0; i < Integer.parseInt(PropertiesUtil.get("initWallCount")); i++) {
             this.objects.add(new Wall(100 + 300 * i, 300 + 100 * i, (int) (100 + 100 * Math.random()), (int) (200 + 100 * Math.random())));
@@ -104,20 +104,30 @@ public class GameModel implements Serializable {
         return playerTank;
     }
 
-
-    public void updateOrInsertByUUID(PlayerTank playerTank) {
+    public PlayerTank getPlayerTankByUUID(UUID uuid) {
         for (int i = 0; i < objects.size(); i++) {
-            if (objects.get(i) instanceof PlayerTank) {
-                PlayerTank playerTank1 = (PlayerTank) objects.get(i);
-                if (playerTank1.getId().equals(playerTank.getId())) {
-                    objects.remove(i);
-                    objects.add(playerTank);
-                    return;
+            if (objects.get(i) instanceof PlayerTank){
+                PlayerTank playerTank= (PlayerTank) objects.get(i);
+                if (playerTank.getId().equals(uuid)) {
+                    return playerTank;
                 }
             }
         }
-        objects.add(playerTank);
+        return null;
     }
+
+    public Bullet getBulletById(UUID bulletId) {
+        for (int i = 0; i < objects.size(); i++) {
+            if (objects.get(i) instanceof Bullet){
+                Bullet bullet= (Bullet) objects.get(i);
+                if (bullet.getId().equals(bulletId)) {
+                    return bullet;
+                }
+            }
+        }
+        return null;
+    }
+
 
     public static class GameModelHolder {
         private static final GameModel gameModel = new GameModel();
