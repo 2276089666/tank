@@ -26,7 +26,7 @@ public class ColliderChain implements Collider {
         String[] colliderName = colliderNames.split(",");
         for (String s : colliderName) {
             try {
-                Class<?> aClass = Class.forName("client.chainOfResponsibility." + s);
+                Class<?> aClass = Class.forName("client.chainOfResponsibility.strategy." + s);
                 Collider collider = (Collider) aClass.getDeclaredConstructor().newInstance();
                 colliderList.add(collider);
             } catch (ClassNotFoundException e) {

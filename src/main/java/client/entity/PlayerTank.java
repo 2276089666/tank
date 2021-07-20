@@ -4,12 +4,15 @@ import client.ResourceManager.ResourceManager;
 import client.constant.Direction;
 import client.constant.Group;
 import client.frame.TankFrame;
+import client.model.GameModel;
 import client.strategy.fire.FireStrategy;
 import client.util.PropertiesUtil;
+import net.message.TankJoinMessage;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.lang.reflect.InvocationTargetException;
+import java.util.UUID;
 
 /**
  * @Author ws
@@ -17,8 +20,8 @@ import java.lang.reflect.InvocationTargetException;
  */
 // 玩家
 public class PlayerTank extends AbstractGameObject {
-    public static final int speed = 10;
-    public boolean isAlive = true;
+    private static final int speed = 10;
+    private boolean isAlive = true;
     private int x;
     private int y;
     private Direction dir;
@@ -28,6 +31,8 @@ public class PlayerTank extends AbstractGameObject {
     private Rectangle rectangle = null;
     private int preX;
     private int preY;
+    private UUID id;
+    private boolean fire;
 
     public PlayerTank(int x, int y, Direction dir, Group group) {
         this.x = x;
@@ -41,7 +46,24 @@ public class PlayerTank extends AbstractGameObject {
         this.rectangle.y = y;
         this.rectangle.width=ResourceManager.goodTankU.getWidth();
         this.rectangle.height=ResourceManager.goodTankU.getHeight();
+        this.id=UUID.randomUUID();
+        this.fire=false;
     }
+
+    public PlayerTank(TankJoinMessage tankJoinMessage) {
+        this.id=tankJoinMessage.getUuid();
+        this.x=tankJoinMessage.getX();
+        this.y=tankJoinMessage.getY();
+        this.dir=tankJoinMessage.getDirection();
+        this.group=tankJoinMessage.getGroup();
+        this.moving=tankJoinMessage.isMoving();
+        this.rectangle = new Rectangle();
+        this.rectangle.width=ResourceManager.goodTankU.getWidth();
+        this.rectangle.height=ResourceManager.goodTankU.getHeight();
+        this.rectangle.x = x;
+        this.rectangle.y = y;
+    }
+
 
     public Rectangle getRectangle() {
         return rectangle;
@@ -55,9 +77,23 @@ public class PlayerTank extends AbstractGameObject {
         return group;
     }
 
+    public UUID getId() {
+        return id;
+    }
+
+    public boolean isFire() {
+        return fire;
+    }
+
     // 画tank
     public void fillRect(Graphics g) {
         if (!this.isAlive()) return;
+
+        Color preColor = g.getColor();
+        g.setColor(Color.YELLOW);
+        g.drawString(id.toString(),x-80,y-10);
+        g.setColor(preColor);
+
         switch (dir) {
             case Right:
                 g.drawImage(ResourceManager.goodTankR, x, y, null);
@@ -180,6 +216,7 @@ public class PlayerTank extends AbstractGameObject {
                 up = false;
                 break;
             case KeyEvent.VK_SPACE:
+                this.fire=true;
                 fire();
                 break;
         }
@@ -187,6 +224,7 @@ public class PlayerTank extends AbstractGameObject {
     }
 
     private void fire() {
+        if (!this.isAlive()) return;
         try {
             String className = PropertiesUtil.get("fireStrategy");
             Class<?> aClass = Class.forName("client.strategy.fire." + className);
@@ -207,6 +245,7 @@ public class PlayerTank extends AbstractGameObject {
 
     public void die() {
         this.isAlive = false;
+        GameModel.getInstance().add(new Explosion(x, y));
     }
 
     public boolean collisionWithTank(Tank tank2) {
@@ -227,6 +266,22 @@ public class PlayerTank extends AbstractGameObject {
         Rectangle rectangle = this.getRectangle();
         Rectangle wallRectangle = wall.getRectangle();
         if (rectangle.intersects(wallRectangle)){
+            this.back();
+            return false;
+        }
+        return false;
+    }
+
+    public boolean isMoving() {
+        return moving;
+    }
+
+    public boolean collisionWithPlayerTank(PlayerTank playerTank1) {
+        if (!this.isAlive()) return true;
+        if (!playerTank1.isAlive()) return true;
+        Rectangle rectangle = this.getRectangle();
+        Rectangle rectangle1 = playerTank1.getRectangle();
+        if (rectangle.intersects(rectangle1)){
             this.back();
             return false;
         }

@@ -1,5 +1,6 @@
-package client.chainOfResponsibility;
+package client.chainOfResponsibility.strategy;
 
+import client.chainOfResponsibility.Collider;
 import client.entity.AbstractGameObject;
 import client.entity.PlayerTank;
 import client.entity.Wall;

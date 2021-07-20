@@ -1,5 +1,6 @@
-package client.chainOfResponsibility;
+package client.chainOfResponsibility.strategy;
 
+import client.chainOfResponsibility.Collider;
 import client.entity.AbstractGameObject;
 import client.entity.PlayerTank;
 import client.entity.Tank;
@@ -8,7 +9,7 @@ import client.entity.Tank;
  * @Author ws
  * @Date 2021/7/19 11:46
  */
-public class PlayerTankAndTankCollider implements Collider{
+public class PlayerTankAndTankCollider implements Collider {
     @Override
     public boolean collide(AbstractGameObject go1, AbstractGameObject go2) {
         if (go1 instanceof PlayerTank && go2 instanceof Tank ) {

@@ -5,10 +5,13 @@ import client.constant.Direction;
 import client.constant.Group;
 import client.entity.*;
 import client.util.PropertiesUtil;
+import io.netty.util.CharsetUtil;
 
 import java.awt.*;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Random;
+import java.util.UUID;
 
 /**
  * @Author ws
@@ -21,6 +24,7 @@ public class GameModel implements Serializable {
     private PlayerTank playerTank = null;
     private ArrayList<AbstractGameObject> objects = null;
     private ColliderChain colliderChain = null;
+    private Random random = new Random();
 
     private GameModel() {
         initGameObject();
@@ -31,13 +35,16 @@ public class GameModel implements Serializable {
     }
 
     public void initGameObject() {
-        this.playerTank = new PlayerTank(100, 400, Direction.Down, Group.Good);
+        // 随机生成玩家tank位置
+        this.playerTank = new PlayerTank(900 - random.nextInt(800), 900 - random.nextInt(100), Direction.values()[random.nextInt(Direction.values().length)], Group.Good);
         this.objects = new ArrayList<>();
         this.objects.add(playerTank);
         for (int i = 0; i < Integer.parseInt(PropertiesUtil.get("initTankCount")); i++) {
-            this.objects.add(new Tank(50 + 70 * i, 100, Direction.Down, Group.Bad));
+            this.objects.add(new Tank(50 + 150 * i, 100 + 30 * i, Direction.Down, Group.Bad));
         }
-        this.objects.add(new Wall(300, 200, 50, 150));
+        for (int i = 0; i < Integer.parseInt(PropertiesUtil.get("initWallCount")); i++) {
+            this.objects.add(new Wall(100 + 300 * i, 300 + 100 * i, (int) (100 + 100 * Math.random()), (int) (200 + 100 * Math.random())));
+        }
         this.colliderChain = new ColliderChain();
     }
 
@@ -51,7 +58,7 @@ public class GameModel implements Serializable {
         int bulletsSize = 0;
         int enemySize = 0;
         int wallSize = 0;
-        int playerSize=0;
+        int playerSize = 0;
         for (AbstractGameObject object : objects) {
             if (object instanceof Bullet) {
                 bulletsSize++;
@@ -59,7 +66,7 @@ public class GameModel implements Serializable {
                 enemySize++;
             } else if (object instanceof Wall) {
                 wallSize++;
-            }else if (object instanceof PlayerTank){
+            } else if (object instanceof PlayerTank) {
                 playerSize++;
             }
         }
@@ -67,6 +74,11 @@ public class GameModel implements Serializable {
         g.drawString("enemy size:  " + enemySize, 20, 70);
         g.drawString("wall size:  " + wallSize, 20, 90);
         g.drawString("player size:  " + playerSize, 20, 110);
+        g.drawString(new String("                 \u2191".getBytes(), CharsetUtil.UTF_8), 20, 130);
+        g.drawString(new String("move: \u2190  \u2193  \u2192".getBytes(), CharsetUtil.UTF_8), 20, 150);
+        g.drawString("fire:   space", 20, 180);
+        g.drawString("game save : s", 20, 200);
+        g.drawString("game load : l", 20, 220);
         g.setColor(preColor);
 
 
@@ -90,6 +102,21 @@ public class GameModel implements Serializable {
 
     public PlayerTank getPlayerTank() {
         return playerTank;
+    }
+
+
+    public void updateOrInsertByUUID(PlayerTank playerTank) {
+        for (int i = 0; i < objects.size(); i++) {
+            if (objects.get(i) instanceof PlayerTank) {
+                PlayerTank playerTank1 = (PlayerTank) objects.get(i);
+                if (playerTank1.getId().equals(playerTank.getId())) {
+                    objects.remove(i);
+                    objects.add(playerTank);
+                    return;
+                }
+            }
+        }
+        objects.add(playerTank);
     }
 
     public static class GameModelHolder {

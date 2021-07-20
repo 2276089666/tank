@@ -5,9 +5,11 @@ import client.constant.Direction;
 import client.constant.Group;
 import client.frame.TankFrame;
 import client.model.GameModel;
+import net.message.TankJoinMessage;
 
 import java.awt.*;
 import java.util.Random;
+import java.util.UUID;
 
 
 /**
@@ -26,6 +28,9 @@ public class Tank extends AbstractGameObject {
     private Group group;
     private boolean isAlive = true;
     private Rectangle rectangle = null;
+    private boolean moving=true;
+    private UUID id;
+    private boolean fire=true;
 
     public Tank(int x, int y, Direction dir, Group group) {
         this.x = x;
@@ -39,10 +44,18 @@ public class Tank extends AbstractGameObject {
         this.rectangle.y = y;
         this.rectangle.width = ResourceManager.badTankD.getWidth();
         this.rectangle.height = ResourceManager.badTankD.getHeight();
+        this.id=UUID.randomUUID();
+        this.fire=true;
     }
+
+
 
     public Group getGroup() {
         return group;
+    }
+
+    public UUID getId() {
+        return id;
     }
 
     // 画tank
@@ -95,6 +108,7 @@ public class Tank extends AbstractGameObject {
         }
         checkOutOfBounds();
         setRandomDirection();
+        if (!fire) return;
         fire();
     }
 

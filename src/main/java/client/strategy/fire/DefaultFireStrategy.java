@@ -12,8 +12,8 @@ import client.frame.TankFrame;
 public class DefaultFireStrategy implements FireStrategy{
     @Override
     public void fire(PlayerTank playerTank) {
-        int bx = playerTank.getX() + ResourceManager.goodTankU.getWidth() / 2 - ResourceManager.bulletU.getWidth() / 2;
-        int by = playerTank.getY() + ResourceManager.goodTankU.getHeight() / 2 - ResourceManager.bulletU.getHeight() / 2;
+        int bx = playerTank.getX() + ResourceManager.goodTankU.getWidth() / 2 - ResourceManager.goodBulletU.getWidth() / 2;
+        int by = playerTank.getY() + ResourceManager.goodTankU.getHeight() / 2 - ResourceManager.goodBulletU.getHeight() / 2;
         Bullet bullet = new Bullet(bx, by, playerTank.getDir(), playerTank.getGroup());
         TankFrame.getInstance().getGameModel().add(bullet);
     }

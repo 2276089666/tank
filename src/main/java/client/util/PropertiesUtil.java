@@ -15,7 +15,7 @@ public class PropertiesUtil {
     static {
         properties = new Properties();
         try {
-            properties.load(PropertiesUtil.class.getClassLoader().getResourceAsStream("config"));
+            properties.load(PropertiesUtil.class.getClassLoader().getResourceAsStream("config.properties"));
         } catch (IOException e) {
             e.printStackTrace();
         }

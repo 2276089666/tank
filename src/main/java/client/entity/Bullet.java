@@ -37,16 +37,16 @@ public class Bullet extends AbstractGameObject {
     public void fillRect(Graphics g) {
         switch (dir) {
             case Right:
-                g.drawImage(ResourceManager.bulletR, x, y, null);
+                g.drawImage(this.group == Group.Bad ? ResourceManager.bulletR : ResourceManager.goodBulletR, x, y, null);
                 break;
             case Left:
-                g.drawImage(ResourceManager.bulletL, x, y, null);
+                g.drawImage(this.group == Group.Bad ? ResourceManager.bulletL : ResourceManager.goodBulletL, x, y, null);
                 break;
             case Up:
-                g.drawImage(ResourceManager.bulletU, x, y, null);
+                g.drawImage(this.group == Group.Bad ? ResourceManager.bulletU : ResourceManager.goodBulletU, x, y, null);
                 break;
             case Down:
-                g.drawImage(ResourceManager.bulletD, x, y, null);
+                g.drawImage(this.group == Group.Bad ? ResourceManager.bulletD : ResourceManager.goodBulletD, x, y, null);
                 break;
         }
         moveByDirection();
@@ -88,7 +88,7 @@ public class Bullet extends AbstractGameObject {
         // 避免tank死了,其坐标还在,会导致我们的子弹到死亡坦克之前的坐标会消失
         if (!tank.isAlive()) return true;
         // 避免一个子弹打死多个tank
-        if (!this.isAlive) return true;
+        if (!this.isAlive()) return true;
         // 同队不攻击
         if (this.group == tank.getGroup()) return false;
         Rectangle rectangle = this.getRectangle();
@@ -118,6 +118,21 @@ public class Bullet extends AbstractGameObject {
         Rectangle wallRectangle = wall.getRectangle();
         if (rectangle.intersects(wallRectangle)) {
             this.die();
+            return true;
+        }
+        return false;
+    }
+
+    public boolean collisionWithPlayerTank(PlayerTank playerTank) {
+        if (!this.isAlive()) return true;
+        if (!playerTank.isAlive()) return true;
+        // 自己发出的子弹不能打自己
+        if (this.group == playerTank.getGroup()) return false;
+        Rectangle rectangle = this.getRectangle();
+        Rectangle playerTankRectangle = playerTank.getRectangle();
+        if (rectangle.intersects(playerTankRectangle)) {
+            this.die();
+            playerTank.die();
             return true;
         }
         return false;

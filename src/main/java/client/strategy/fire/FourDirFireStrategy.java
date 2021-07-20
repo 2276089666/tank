@@ -13,8 +13,8 @@ import client.frame.TankFrame;
 public class FourDirFireStrategy implements FireStrategy{
     @Override
     public void fire(PlayerTank playerTank) {
-        int bx = playerTank.getX() + ResourceManager.goodTankU.getWidth() / 2 - ResourceManager.bulletU.getWidth() / 2;
-        int by = playerTank.getY() + ResourceManager.goodTankU.getHeight() / 2 - ResourceManager.bulletU.getHeight() / 2;
+        int bx = playerTank.getX() + ResourceManager.goodTankU.getWidth() / 2 - ResourceManager.goodBulletU.getWidth() / 2;
+        int by = playerTank.getY() + ResourceManager.goodTankU.getHeight() / 2 - ResourceManager.goodBulletU.getHeight() / 2;
         for (Direction dir : Direction.values()) {
             TankFrame.getInstance().getGameModel().add(new Bullet(bx, by, dir, playerTank.getGroup()));
         }
