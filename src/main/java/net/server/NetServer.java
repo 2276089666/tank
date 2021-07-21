@@ -39,7 +39,7 @@ public class NetServer {
                             ChannelPipeline pipeline = ch.pipeline();
                             pipeline.addLast(new ServerHandler());
                         }
-                    }).bind(new InetSocketAddress("localhost", 9090));
+                    }).bind(new InetSocketAddress("192.168.31.153", 9090));
             System.out.println("server started ... ");
             bind.sync().channel().closeFuture().sync();
         } catch (InterruptedException e) {

@@ -53,7 +53,7 @@ public class NetClient {
                             pipeline.addLast(new ClientHandler());
                         }
                     })
-                    .connect(new InetSocketAddress("localhost", 9090));
+                    .connect(new InetSocketAddress("192.168.31.153", 9090));
 
 
             connect.addListener(new ChannelFutureListener() {
