@@ -24,7 +24,9 @@ public class NetClient {
     }
 
     public void send(AbstractMessage abstractMessage) {
-        client.writeAndFlush(abstractMessage);
+      if (client==null) return;
+      client.writeAndFlush(abstractMessage);
+
     }
 
     private static class NetClientHolder {

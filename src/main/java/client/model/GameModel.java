@@ -43,7 +43,7 @@ public class GameModel implements Serializable {
             this.objects.add(new Tank(50 + 150 * i, 100 + 30 * i, Direction.Down, Group.ManMachine));
         }
         for (int i = 0; i < Integer.parseInt(PropertiesUtil.get("initWallCount")); i++) {
-            this.objects.add(new Wall(100 + 300 * i, 300 + 100 * i, (int) (100 + 100 * Math.random()), (int) (200 + 100 * Math.random())));
+            this.objects.add(new Wall(50+200*i, 400,  100,  100 ));
         }
         this.colliderChain = new ColliderChain();
     }

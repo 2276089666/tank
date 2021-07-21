@@ -173,7 +173,7 @@ public class Bullet extends AbstractGameObject {
         if (rectangle.intersects(playerTankRectangle)) {
             this.die();
             playerTank.die();
-            NetClient.getInstance().send(new TankDieMessage(this.getId(),this.getId()));
+            NetClient.getInstance().send(new TankDieMessage(this.getId(),playerTank.getId()));
             return true;
         }
         return false;
